@@ -1,6 +1,6 @@
 # SignalGraph Lite — morning review
 
-Prepared 13 October 2026 (Australia/Sydney). Work is local on `feature/signalgraph-lite`, based on upstream `0a3b1711b018e5590cf5c44a3ee3e67d6733ee13`. Nothing was pushed, deployed, or published; no external accounts were modified.
+Prepared 13 October 2026 (Australia/Sydney). Work is committed on `feature/signalgraph-lite`, based on upstream `0a3b1711b018e5590cf5c44a3ee3e67d6733ee13`. The user has now authorized committing and pushing this feature branch to `TT27/SignalGraph`. No deployment or PR is included.
 
 ## Completed
 
@@ -67,4 +67,4 @@ Initial repository cloning and package installation failed because network acces
 2. **Broader evaluation and adjudication:** add independently labelled cases with multi-valued facts, competing corrections, numeric/unit normalization and source reliability; report precision/recall by class on held-out data.
 3. **True temporal investigation:** implement observation-time as-of snapshots, retained resolution history, and a navigable entity graph with validity-aware relationship filtering.
 
-The offline MVP is complete and locally reviewable. Publication, push, deployment, or a PR requires separate explicit approval.
+The offline MVP is complete and reviewable on `feature/signalgraph-lite` in the SignalGraph fork once pushed. The authorized delivery adds the example and this review document; Graphiti core and the main branch are unchanged. Deployment or a PR still requires separate explicit approval.

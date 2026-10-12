@@ -4,7 +4,14 @@ An original, self-contained Graphiti example for inspecting how company intellig
 
 ## Start the offline demo
 
-From the **Graphiti repository root**, with Python 3.10+:
+Clone the feature branch from the SignalGraph fork:
+
+```bash
+git clone --branch feature/signalgraph-lite https://github.com/TT27/SignalGraph.git
+cd SignalGraph
+```
+
+From the **repository root**, with Python 3.10+:
 
 ```bash
 python -m examples.signalgraph_lite.server
