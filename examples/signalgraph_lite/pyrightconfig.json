@@ -1,6 +1,6 @@
 {
-  "include": ["models.py", "engine.py", "server.py", "evaluate.py", "tests", "graphiti_adapter.py"],
-  "exclude": ["tests/browser_smoke.py"],
+  "include": ["models.py", "engine.py", "server.py", "evaluate.py", "tests", "graphiti_adapter.py", "store.py", "temporal.py", "briefing.py"],
+  "exclude": ["tests/browser_smoke.py", "tests/desk_smoke.py"],
   "pythonVersion": "3.10",
   "typeCheckingMode": "basic",
   "extraPaths": ["../.."]

@@ -70,7 +70,7 @@ with sync_playwright() as p:
     assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
     page.keyboard.press('Escape')
     page.route(
-        '**/api/snapshot',
+        '**/api/snapshot*',
         lambda route: route.fulfill(
             status=500, content_type='application/json', body='{"error":"test failure"}'
         ),
@@ -78,7 +78,7 @@ with sync_playwright() as p:
     page.reload()
     page.locator('[data-retry]').wait_for(state='visible')
     assert 'HTTP 500' in page.locator('#state').inner_text()
-    page.unroute('**/api/snapshot')
+    page.unroute('**/api/snapshot*')
     page.locator('[data-retry]').click()
     page.locator('#app').wait_for(state='visible')
     assert not errors, errors
@@ -87,7 +87,7 @@ with sync_playwright() as p:
     )
     # Empty state is explicit and has a recovery control.
     page.route(
-        '**/api/snapshot',
+        '**/api/snapshot*',
         lambda route: route.fulfill(
             status=200,
             content_type='application/json',

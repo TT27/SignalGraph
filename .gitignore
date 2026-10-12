@@ -166,3 +166,6 @@ cache.db*
 
 # All DS_Store files
 .DS_Store
+
+# SignalGraph Desk local investigations and analyst notes
+/work/signalgraph/

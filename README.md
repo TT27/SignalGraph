@@ -1,3 +1,21 @@
+# SignalGraph Desk
+
+**A local evidence workbench for investigating changing company and vendor intelligence.** Import structured source evidence, detect revisions and contradictions, replay observation and validity dates, inspect an evidence graph, save analyst decisions, create local watch rules, and export source-linked briefings.
+
+```bash
+python -m examples.signalgraph_lite.server
+```
+
+Open **http://127.0.0.1:8765**. Python 3.10+, no API keys or Neo4j needed. Investigations persist locally in SQLite. The initial dataset is visibly labelled synthetic; imported investigations remain separate.
+
+[App documentation and import format](examples/signalgraph_lite/README.md) · [Open-source research](examples/signalgraph_lite/RESEARCH.md) · [Delivery review](MORNING_REVIEW.md) · [60-second walkthrough](examples/signalgraph_lite/WALKTHROUGH.md)
+
+This fork adds an original self-contained application under `examples/signalgraph_lite`. Graphiti core is unchanged. Its optional model/database ingestion adapter remains externally unverified.
+
+---
+
+## Upstream Graphiti documentation
+
 <p align="center">
   <a href="https://www.getzep.com/">
     <img src="https://github.com/user-attachments/assets/119c5682-9654-4257-8922-56b7cb8ffd73" width="150" alt="Zep Logo">

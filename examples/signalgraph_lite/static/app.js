@@ -31,7 +31,11 @@ const titles = {
   timeline: 'Source timeline',
   entities: 'Entity explorer',
   sources: 'Source library',
-  about: 'About SignalGraph Lite',
+  about: 'About SignalGraph Desk',
+  replay: 'Temporal replay',
+  graph: 'Evidence graph',
+  board: 'Review board',
+  watches: 'Watch inbox',
 };
 const descriptions = {
   overview:
@@ -46,8 +50,14 @@ const descriptions = {
   about:
     'An independently runnable, evidence-led temporal intelligence example.',
 };
-let data, docs, claims, entities, lastFocus, selectedEntity;
-const entityName = (id) => entities.get(id)?.name ?? 'Ambiguous “Nova”';
+let data,
+  docs,
+  claims,
+  entities,
+  lastFocus,
+  selectedEntity,
+  loadGeneration = 0;
+const entityName = (id) => entities.get(id)?.name ?? 'Ambiguous identity';
 function eventTitle(event) {
   return `${entityName(event.entity_id)} · ${pretty(event.predicate)}`;
 }
@@ -56,14 +66,16 @@ function summary(event) {
   const after = event.after.map((id) => claims.get(id).value).join(', ');
   if (event.kind === 'unverified')
     return event.classification === 'Ambiguous identity'
-      ? 'Shared alias needs identity resolution'
-      : 'No current-period evidence to verify this assertion';
+      ? 'Identity needs resolution'
+      : event.classification === 'Incomplete evidence'
+        ? 'Retraction has no linked prior assertion'
+        : 'No current-period evidence to verify this assertion';
   if (event.kind === 'addition') return `Newly observed: ${after}`;
   if (event.kind === 'removal') return `Explicitly retracted: ${before}`;
   return `${before} → ${after}${event.kind === 'conflict' ? ' · overlapping validity' : ''}`;
 }
 function eventRow(event) {
-  return `<button class="event-row" data-event="${esc(event.id)}" aria-label="Inspect ${esc(event.kind)}: ${esc(eventTitle(event))}"><span class="event-icon ${event.kind}" aria-hidden="true">${symbols[event.kind]}</span><span class="event-content"><strong>${esc(eventTitle(event))}</strong><small>${esc(summary(event))}</small></span><span class="badge ${event.kind}">${esc(pretty(event.kind))}</span><span class="event-date">${date(event.observed_at)}</span><span class="row-arrow" aria-hidden="true">→</span></button>`;
+  return `<button class="event-row" data-event="${esc(event.id)}" aria-label="Inspect ${esc(event.kind)}: ${esc(eventTitle(event))}"><span class="event-icon ${event.kind}" aria-hidden="true">${symbols[event.kind]}</span><span class="event-content"><strong>${esc(eventTitle(event))}</strong><small>${esc(summary(event))}</small>${event.review?.status && event.review.status !== 'open' ? `<small class="review-note">Review: ${esc(event.review.status)}</small>` : ''}</span><span class="badge ${event.kind}">${esc(pretty(event.kind))}</span><span class="event-date">${date(event.observed_at)}</span><span class="row-arrow" aria-hidden="true">→</span></button>`;
 }
 function navigate() {
   if (!data) return;
@@ -83,17 +95,22 @@ function navigate() {
     view === 'overview'
       ? 'See what changed.<br><span class="muted-title">Understand why it matters.</span>'
       : esc(titles[view]);
-  $('#page-description').textContent = descriptions[view];
-  document.title = `${titles[view]} · SignalGraph Lite`;
+  $('#page-description').textContent =
+    descriptions[view] ??
+    'Connect evidence, time, and analyst decisions in your local investigation.';
+  document.title = `${titles[view]} · SignalGraph Desk`;
+  if (view === 'graph') window.workbench?.renderGraph();
 }
 function renderChanges() {
   const query = $('#search').value.trim().toLowerCase(),
     kind = $('#kind-filter').value,
-    entity = $('#entity-filter').value;
+    entity = $('#entity-filter').value,
+    review = $('#review-filter').value;
   const matches = data.events.filter(
     (event) =>
       (kind === 'all' || kind === event.kind) &&
       (entity === 'all' || entity === (event.entity_id ?? 'unknown')) &&
+      (review === 'all' || review === (event.review?.status ?? 'open')) &&
       `${eventTitle(event)} ${event.explanation} ${summary(event)}`
         .toLowerCase()
         .includes(query),
@@ -108,7 +125,8 @@ function resetFilters() {
   $('#search').value = '';
   $('#kind-filter').value = 'all';
   $('#entity-filter').value = 'all';
-  renderChanges();
+  $('#review-filter').value = 'all';
+  if (data) renderChanges();
 }
 function renderTimeline() {
   const ordered = [...data.documents].sort(
@@ -125,7 +143,7 @@ function renderTimeline() {
         (e) =>
           e.observed_at === doc.observed_at && e.source_ids.includes(doc.id),
       );
-      return `<section class="timeline-day"><h2>${date(doc.observed_at)} <span class="muted">/ ${esc(doc.period)}</span></h2><div class="timeline-source"><strong>${esc(doc.title)}</strong><p>${esc(doc.publisher)} · ${esc(doc.id)} · Synthetic source</p>${events.map(eventRow).join('')}${events.length ? '' : '<p>Baseline evidence recorded; no change at this observation.</p>'}<button class="text-button" data-source="${esc(doc.id)}">Read original document →</button></div></section>`;
+      return `<section class="timeline-day"><h2>${date(doc.observed_at)} <span class="muted">/ ${esc(doc.period)}</span></h2><div class="timeline-source"><strong>${esc(doc.title)}</strong><p>${esc(doc.publisher)} · ${esc(doc.id)} · ${doc.synthetic ? 'Synthetic source' : 'Imported source'}</p>${events.map(eventRow).join('')}${events.length ? '' : '<p>Baseline evidence recorded; no change at this observation.</p>'}<button class="text-button" data-source="${esc(doc.id)}">Read original document →</button></div></section>`;
     })
     .join('');
 }
@@ -137,7 +155,9 @@ function renderEntity(id) {
     button.classList.toggle('active', active);
     button.setAttribute('aria-pressed', String(active));
   });
-  const relevant = data.claims.filter((c) => resolve(c.entity) === id);
+  const relevant = data.claims.filter(
+    (c) => (c.entity_id !== undefined ? c.entity_id : resolve(c.entity)) === id,
+  );
   const relations = data.relationships.filter(
     (r) => r.source === id || r.target === id,
   );
@@ -163,7 +183,7 @@ function showDrawer(html) {
 function evidenceBlock(id, label) {
   const c = claims.get(id),
     d = docs.get(c.source_id);
-  return `<section class="evidence-block"><h3>${esc(label)} / ${esc(c.id)}</h3><div class="value">${esc(c.value)}</div><blockquote>“${esc(c.quote)}”</blockquote><dl><dt>Source</dt><dd>${esc(d.id)} · ${esc(d.title)}</dd><dt>Publisher</dt><dd>${esc(d.publisher)}</dd><dt>Observed</dt><dd>${esc(d.observed_at)}</dd><dt>Valid from</dt><dd>${esc(c.valid_from)}</dd><dt>Valid until</dt><dd>${esc(c.valid_to ?? 'Open-ended (not proof of continued truth)')}</dd><dt>Provenance</dt><dd>${esc(d.uri)}</dd></dl><button class="text-button" data-source="${esc(d.id)}">Read full source →</button></section>`;
+  return `<section class="evidence-block"><h3>${esc(label)} / ${esc(c.id)}</h3><div class="value">${esc(c.value)}</div><blockquote>“${esc(c.quote)}”</blockquote><dl><dt>Source</dt><dd>${esc(d.id)} · ${esc(d.title)}</dd><dt>Publisher</dt><dd>${esc(d.publisher)}</dd><dt>Observed</dt><dd>${esc(d.observed_at)}</dd><dt>Valid from</dt><dd>${esc(c.valid_from)}</dd><dt>Valid until</dt><dd>${esc(c.valid_to ?? 'Open-ended (not proof of continued truth)')}</dd><dt>Provenance</dt><dd>${esc(d.uri)}</dd><dt>Text SHA-256</dt><dd class="sha">${esc(d.sha256 ?? 'Not available')}</dd></dl><button class="text-button" data-source="${esc(d.id)}">Read full source →</button></section>`;
 }
 function showEvent(id) {
   const e = data.events.find((event) => event.id === id);
@@ -172,15 +192,16 @@ function showEvent(id) {
     '<div class="evidence-block"><h3>BEFORE</h3><p class="muted">No linked baseline assertion. This does not establish that the fact was previously false.</p></div>';
   const absentAfter =
     '<div class="evidence-block"><h3>AFTER</h3><p class="muted">No later-period source. Continued validity is unverified.</p></div>';
-  const html = `<span class="badge ${e.kind}">${esc(e.kind)}</span><h2 id="evidence-title">${esc(eventTitle(e))}</h2><p class="explanation">${esc(e.explanation)}</p>${e.before.length ? e.before.map((id) => evidenceBlock(id, 'Before')).join('') : absentBefore}${e.after.length ? e.after.map((id) => evidenceBlock(id, 'After')).join('') : absentAfter}<p class="uncertainty">Evidence classification: ${esc(e.classification)}. No numerical confidence estimate.</p><p class="pill-note">Synthetic fixture · Observed dates and validity dates are independent · ${esc(e.id)}</p>`;
+  const html = `<span class="badge ${e.kind}">${esc(e.kind)}</span><h2 id="evidence-title">${esc(eventTitle(e))}</h2><p class="explanation">${esc(e.explanation)}</p>${e.before.length ? e.before.map((id) => evidenceBlock(id, 'Before')).join('') : absentBefore}${e.after.length ? e.after.map((id) => evidenceBlock(id, 'After')).join('') : absentAfter}<p class="uncertainty">Evidence classification: ${esc(e.classification)}. No numerical confidence estimate.</p><p class="pill-note">${data.synthetic ? 'Synthetic fixture' : 'Imported evidence'} · Observed dates and validity dates are independent · ${esc(e.id)}</p>`;
   if ($('#evidence').open) $('#evidence-body').innerHTML = html;
   else showDrawer(html);
+  window.workbench?.decorateEvidence(e);
 }
 function showSource(id) {
   const doc = docs.get(id);
   if (!doc) return;
   const related = data.events.filter((e) => e.source_ids.includes(id));
-  const html = `<span class="badge">Synthetic source</span><h2 id="evidence-title">${esc(doc.title)}</h2><p class="muted">${esc(doc.publisher)} · ${esc(doc.id)}</p><section class="evidence-block"><h3>PROVENANCE</h3><dl><dt>Observed</dt><dd>${esc(doc.observed_at)}</dd><dt>Period</dt><dd>${esc(doc.period)}</dd><dt>Local URI</dt><dd>${esc(doc.uri)}</dd></dl></section><h3 class="eyebrow">VERBATIM DOCUMENT</h3><div class="source-body">${esc(doc.body)}</div><p class="pill-note">This is an authored demo document. It is not an external citation.</p><h3 class="eyebrow">LINKED DETECTIONS</h3>${related.length ? related.map(eventRow).join('') : '<p class="muted">No detections linked to this document.</p>'}`;
+  const html = `<span class="badge">${doc.synthetic ? 'Synthetic source' : 'Imported source'}</span><h2 id="evidence-title">${esc(doc.title)}</h2><p class="muted">${esc(doc.publisher)} · ${esc(doc.id)}</p><section class="evidence-block"><h3>PROVENANCE</h3><dl><dt>Observed</dt><dd>${esc(doc.observed_at)}</dd><dt>Period</dt><dd>${esc(doc.period)}</dd><dt>Local URI</dt><dd>${esc(doc.uri)}</dd><dt>Text SHA-256</dt><dd class="sha">${esc(doc.sha256 ?? 'Not available')}</dd></dl></section><h3 class="eyebrow">VERBATIM DOCUMENT</h3><div class="source-body">${esc(doc.body)}</div><p class="pill-note">${doc.synthetic ? 'This is an authored synthetic document.' : 'This source was supplied in an imported dataset.'} Provenance is supplied by the dataset; text hashes do not authenticate the publisher.</p><h3 class="eyebrow">LINKED DETECTIONS</h3>${related.length ? related.map(eventRow).join('') : '<p class="muted">No detections linked to this document.</p>'}`;
   if ($('#evidence').open) $('#evidence-body').innerHTML = html;
   else showDrawer(html);
 }
@@ -233,9 +254,11 @@ function render() {
     .slice(0, 4)
     .map(eventRow)
     .join('');
-  $('#entity-filter').innerHTML += data.entities
-    .map((e) => `<option value="${esc(e.id)}">${esc(e.name)}</option>`)
-    .join('');
+  $('#entity-filter').innerHTML =
+    '<option value="all">All entities</option><option value="unknown">Ambiguous identity</option>' +
+    data.entities
+      .map((e) => `<option value="${esc(e.id)}">${esc(e.name)}</option>`)
+      .join('');
   $('#entity-list').innerHTML = data.entities
     .map(
       (e) =>
@@ -258,23 +281,35 @@ function render() {
   $('#date-range').value = data.documents.length - 1;
   renderChanges();
   renderTimeline();
-  renderEntity(selectedEntity ?? data.entities[0].id);
+  renderEntity(
+    entities.has(selectedEntity) ? selectedEntity : data.entities[0].id,
+  );
+  window.workbench?.render();
   navigate();
   $('#state').hidden = true;
   $('#app').hidden = false;
 }
 async function load() {
+  const generation = ++loadGeneration;
   $('#state').hidden = false;
   $('#app').hidden = true;
   $('#state').textContent = 'Loading evidence and comparing periods…';
   try {
-    const response = await fetch('/api/snapshot', {
-      signal: AbortSignal.timeout(10000),
-    });
+    const response = await fetch(
+      window.workbench?.snapshotURL() ?? '/api/snapshot',
+      {
+        signal: AbortSignal.timeout(10000),
+      },
+    );
     if (!response.ok)
       throw new Error(`Local engine returned HTTP ${response.status}`);
-    data = await response.json();
-    if (data.mode !== 'offline-demo' || !Array.isArray(data.events))
+    const loaded = await response.json();
+    if (generation !== loadGeneration) return;
+    data = loaded;
+    if (
+      !['offline-demo', 'local-workspace'].includes(data.mode) ||
+      !Array.isArray(data.events)
+    )
       throw new Error('Unexpected engine response');
     if (!data.documents.length || !data.entities.length) {
       $('#state').innerHTML =
@@ -283,6 +318,7 @@ async function load() {
     }
     render();
   } catch (error) {
+    if (generation !== loadGeneration) return;
     $('#state').innerHTML =
       `<h2>Evidence could not be loaded</h2><p>${esc(error.message)}</p><p>Check that the local Python server is running and the fixture is valid.</p><button class="button" data-retry>Try again</button>`;
   }
@@ -323,5 +359,5 @@ $('#search').addEventListener('input', renderChanges);
 $('#kind-filter').addEventListener('change', renderChanges);
 $('#entity-filter').addEventListener('change', renderChanges);
 $('#date-range').addEventListener('input', renderTimeline);
+$('#review-filter').addEventListener('change', renderChanges);
 window.addEventListener('hashchange', navigate);
-load();

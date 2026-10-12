@@ -1,18 +1,13 @@
-# 60-second LinkedIn walkthrough
+# 60-second SignalGraph Desk walkthrough
 
-**0–10s · Overview**
-“I built SignalGraph Lite, an open-source Graphiti example for tracking changing company intelligence. This reproducible demo compares twelve fictional announcements across two periods: six entities, four changes, and two contradictions.”
+**0–10s · Overview:** “SignalGraph Desk turns changing company information into a source-linked investigation. This local demo has twelve fictional documents, four changes and two contradictions. I can also import my own structured evidence.”
 
-**10–25s · Changes → filter Conflicts → Helios**
-“Helios publishes two different revenue forecasts for the same quarter. A newer source doesn't automatically make the earlier one false. These validity windows overlap, so the engine flags a conflict and keeps both exact excerpts.”
+**10–23s · Changes → conflict → evidence:** “Here are two forecasts for the same quarter. I can read exact excerpts, compare statement text, inspect separate publication and validity dates, and record a review decision. That decision doesn't erase the source conflict.”
 
-**25–37s · Evidence drawer**
-“Every detection links to document IDs, publishers, and verbatim evidence. Publication time and asserted validity are separate. I use evidence classifications rather than fabricated confidence scores.”
+**23–36s · Temporal replay:** “There are two clocks: what evidence had been observed, and when an assertion applies. Moving the first clock back removes later announcements. Moving the second clock preserves historical assertions before a correction takes effect.”
 
-**37–48s · Entity explorer → Nova Labs / Nova Energy**
-“Entity IDs preserve relationships and historical assertions. ‘Nova’ is a shared alias, so the system leaves that claim unverified instead of merging two companies. Explicit corrections and retractions are handled separately.”
+**36–47s · Evidence graph → entity:** “The graph follows sourced relationships. I can inspect an entity's signals and switch between historical edges and assertions active at the replay dates. Shared aliases stay ambiguous.”
 
-**48–60s · Timeline → Overview / Export evidence**
-“The offline demo needs no keys, LLM, or database. Twenty-five automated tests pass, with eight of eight labelled synthetic detections matched. That's a regression result, not real-world accuracy. An optional Graphiti episode adapter is included, with external integration clearly marked unverified.”
+**47–60s · Watch inbox → briefing:** “Focused watches give me a deduplicated local inbox. Reviews and investigations survive restart in SQLite. I can hand someone a Markdown briefing with original evidence and a source manifest. No keys, paid model, or graph database are needed.”
 
-Recording preparation: start the local server, use a 1440px desktop viewport, hide unrelated tabs, and preload the fixture. Show `s02` and `s07` in the Helios drawer. Do not present synthetic fixture URIs as real announcements. Include a repository link only after you have approved pushing/publication.
+Show the **synthetic data** badge and distinguish authored fixtures from imported evidence. The labelled fixture score is a regression result, not real-world accuracy. The optional external Graphiti adapter is included but externally unverified. Repository: [TT27/SignalGraph](https://github.com/TT27/SignalGraph/tree/feature/signalgraph-lite).

@@ -1,6 +1,7 @@
 """Pure rule-based detection over asserted, single-valued company attributes."""
 
 import json
+import re
 from collections import defaultdict
 from dataclasses import asdict
 from itertools import combinations
@@ -29,13 +30,59 @@ def resolve(name: str, entities: tuple[Entity, ...]) -> str | None:
 
 
 def load_dataset(path: Path = FIXTURE) -> Dataset:
-    raw = json.loads(path.read_text())
-    data = Dataset(
-        tuple(Entity(**{**e, 'aliases': tuple(e.get('aliases', []))}) for e in raw['entities']),
-        tuple(SourceDocument(**d) for d in raw['documents']),
-        tuple(Claim(**c) for c in raw['claims']),
-        tuple(raw['periods']),
-    )
+    return dataset_from_dict(json.loads(path.read_text()))
+
+
+def dataset_from_dict(raw: Any) -> Dataset:
+    """Validate imported JSON as data before constructing typed records."""
+    if not isinstance(raw, dict):
+        raise ValueError('Dataset must be a JSON object')
+    for key in ('entities', 'documents', 'claims', 'periods'):
+        if not isinstance(raw.get(key), list):
+            raise ValueError(f'{key} must be an array')
+    if len(raw['documents']) > 1000 or len(raw['claims']) > 5000:
+        raise ValueError('Import limit: 1000 documents and 5000 claims')
+    if len(raw['entities']) > 1000 or any(not isinstance(p, str) for p in raw['periods']):
+        raise ValueError('Invalid entities or periods')
+    required = {
+        'entities': ('id', 'name', 'kind'),
+        'documents': ('id', 'title', 'publisher', 'observed_at', 'period', 'body', 'uri'),
+        'claims': ('id', 'entity', 'predicate', 'value', 'source_id', 'quote', 'valid_from'),
+    }
+    for key, names in required.items():
+        for record in raw[key]:
+            if not isinstance(record, dict):
+                raise ValueError(f'{key} records must be objects')
+            for name in names:
+                if not isinstance(record.get(name), str) or not record[name].strip():
+                    raise ValueError(f'{key}.{name} must be a non-empty string')
+            if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,127}', record['id']):
+                raise ValueError('IDs must use 1–128 letters, digits, dots, underscores or hyphens')
+            for name in ('valid_to', 'target', 'supersedes'):
+                if (
+                    name in record
+                    and record[name] is not None
+                    and not isinstance(record[name], str)
+                ):
+                    raise ValueError(f'{name} must be a string or null')
+            for name in ('synthetic', 'retracted'):
+                if name in record and not isinstance(record[name], bool):
+                    raise ValueError(f'{name} must be a boolean')
+            if key == 'documents' and 'synthetic' not in record:
+                raise ValueError('Every document must explicitly declare synthetic true or false')
+            if key == 'entities':
+                aliases = record.get('aliases', [])
+                if not isinstance(aliases, list) or any(not isinstance(a, str) for a in aliases):
+                    raise ValueError('aliases must be an array of strings')
+    try:
+        data = Dataset(
+            tuple(Entity(**{**e, 'aliases': tuple(e.get('aliases', []))}) for e in raw['entities']),
+            tuple(SourceDocument(**d) for d in raw['documents']),
+            tuple(Claim(**c) for c in raw['claims']),
+            tuple(raw['periods']),
+        )
+    except (TypeError, AttributeError) as error:
+        raise ValueError('Dataset has unsupported fields or types') from error
     validate(data)
     return data
 
@@ -242,12 +289,19 @@ def snapshot(data: Dataset) -> dict[str, Any]:
         if c.target
     ]
     return {
-        'mode': 'offline-demo',
-        'synthetic': True,
+        'mode': 'offline-demo' if all(d.synthetic for d in data.documents) else 'local-workspace',
+        'synthetic': all(d.synthetic for d in data.documents),
         'periods': data.periods,
         'entities': [asdict(e) for e in data.entities],
         'documents': [asdict(d) for d in data.documents],
-        'claims': [asdict(c) for c in data.claims],
+        'claims': [
+            {
+                **asdict(c),
+                'entity_id': resolve(c.entity, data.entities),
+                'target_id': resolve(c.target, data.entities) if c.target else None,
+            }
+            for c in data.claims
+        ],
         'events': [asdict(e) for e in events],
         'relationships': relationships,
         'counts': {

@@ -4,22 +4,31 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#101319" />
-    <title>SignalGraph Lite · Intelligence that changes</title>
+    <title>SignalGraph Desk · Evidence into decisions</title>
     <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/workspace.css" />
     <script src="/app.js" defer></script>
+    <script src="/workspace.js" defer></script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to investigation</a>
     <aside class="sidebar">
       <a class="brand" href="#overview"
         ><span class="logo">◈</span
-        ><span>SignalGraph<small>L I T E</small></span></a
+        ><span>SignalGraph<small>D E S K</small></span></a
       >
       <div class="workspace">
         <span class="avatar">SG</span
         ><span
           >Intelligence workspace<small>Local research environment</small></span
         >
+      </div>
+      <div class="workspace-selector">
+        <label for="workspace-select"
+          >Investigation<select id="workspace-select">
+            <option value="demo">Company signals · demo</option>
+          </select></label
+        ><button class="text-button" id="open-import">+ Import</button>
       </div>
       <p class="eyebrow nav-label">INVESTIGATION</p>
       <nav aria-label="Main navigation">
@@ -32,10 +41,17 @@
           ><span>◇</span> Entity explorer</a
         >
         <a href="#sources" data-view="sources"><span>▤</span> Source library</a>
+        <a href="#replay" data-view="replay"><span>◴</span> Temporal replay</a>
+        <a href="#graph" data-view="graph"><span>◈</span> Evidence graph</a>
+        <a href="#board" data-view="board"><span>▥</span> Review board</a>
+        <a href="#watches" data-view="watches"
+          ><span>◎</span> Watch inbox <b id="inbox-count">0</b></a
+        >
       </nav>
       <div class="sidebar-bottom">
-        <span class="status-dot"></span> Offline demo mode
-        <p>Deterministic local processing<br />No API keys required</p>
+        <span class="status-dot"></span>
+        <span id="workspace-mode">Local evidence engine</span>
+        <p>SQLite investigations<br />No API keys required</p>
         <a href="#about" data-view="about">About this investigation →</a>
       </div>
     </aside>
@@ -46,7 +62,7 @@
           <strong id="breadcrumb">Overview</strong></span
         >
         <div>
-          <span class="demo-pill">SYNTHETIC DATA</span
+          <span class="demo-pill" id="data-label">SYNTHETIC DATA</span
           ><span class="local-label">● Local engine</span>
         </div>
       </header>
@@ -68,31 +84,36 @@
                 evidence.
               </p>
             </div>
-            <button id="export" class="button">↓ Export evidence</button>
+            <div class="page-actions">
+              <button id="download-briefing" class="button">↓ Briefing</button
+              ><button id="export" class="button">↓ Evidence</button>
+            </div>
           </div>
           <div class="period-bar">
-            <span><span class="status-dot"></span> Comparison ready</span
-            ><span>JAN 2026 <span class="arrow">→</span> FEB 2026</span
-            ><span class="muted">Baseline vs. current · UTC</span>
+            <span><span class="status-dot"></span>Evidence ready</span
+            ><span id="comparison-label"></span
+            ><span class="muted">Two periods · timestamps in UTC</span>
           </div>
           <section id="view-overview" class="view" aria-label="Overview">
             <div id="metrics" class="metrics"></div>
+            <div class="panel overview-actions">
+              <p id="workflow-summary"></p>
+              <button class="text-button" data-go="replay">
+                Replay the evidence →</button
+              ><button class="text-button" data-go="board">
+                Review queue →
+              </button>
+            </div>
             <div class="overview-grid">
               <section class="panel investigation">
                 <div class="panel-title">
                   <p class="eyebrow">INVESTIGATION BRIEF</p>
                   <span class="subtle-badge">01 / COMPANY SIGNALS</span>
                 </div>
-                <h2>A changing outlook.<br />Two unresolved conflicts.</h2>
-                <p>
-                  Helios revenue guidance and Nova Labs’ launch date disagree
-                  across sources covering the same validity window. Aster’s
-                  workforce count was explicitly revised, and its supplier
-                  disclosure retracted. Atlas Cloud revised its operating
-                  region.
-                </p>
+                <h2 id="brief-heading">Evidence into decisions.</h2>
+                <p id="brief-text" class="overview-brief"></p>
                 <div class="brief-footer">
-                  <span>12 synthetic documents · 6 entities</span
+                  <span id="brief-coverage">Evidence coverage</span
                   ><button class="text-button" data-go="changes">
                     Investigate signals →
                   </button>
@@ -100,16 +121,7 @@
               </section>
               <section class="panel coverage">
                 <p class="eyebrow">EVIDENCE CLASSIFICATION</p>
-                <div class="coverage-chart">
-                  <div class="ring">
-                    <strong>8</strong><span>detections</span>
-                  </div>
-                  <div>
-                    <p><i class="legend conflict"></i>2 conflicting</p>
-                    <p><i class="legend revision"></i>4 observed changes</p>
-                    <p><i class="legend unverified"></i>2 unverified</p>
-                  </div>
-                </div>
+                <div id="evidence-coverage" class="coverage-bars"></div>
                 <p class="footnote">
                   Evidence classes describe support, not statistical confidence.
                 </p>
@@ -159,6 +171,14 @@
                   <option value="all">All entities</option>
                   <option value="unknown">Ambiguous identity</option>
                 </select></label
+              ><label
+                >Review status<select id="review-filter">
+                  <option value="all">All statuses</option>
+                  <option value="open">Open</option>
+                  <option value="investigating">Investigating</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="dismissed">Dismissed</option>
+                </select></label
               ><button id="reset" class="button">Reset filters</button>
             </div>
             <p id="result-count" class="muted" aria-live="polite"></p>
@@ -191,15 +211,127 @@
           </section>
           <section id="view-sources" class="view" hidden>
             <p class="muted">
-              All documents are synthetic, local fixtures. Source identifiers
-              link detections to verbatim evidence.
+              Documents retain the supplied provenance and a SHA-256 fingerprint
+              of stored text. A hash identifies content; it does not
+              authenticate the publisher.
             </p>
             <div id="source-list" class="source-grid"></div>
+          </section>
+
+          <section id="view-replay" class="view" hidden>
+            <p class="replay-help">
+              Two clocks, one evidence trail. Only sources observed by the first
+              date can influence assertions at the second date. “Active”
+              describes source assertions, not established truth.
+            </p>
+            <div class="panel">
+              <div class="replay-controls">
+                <label
+                  >Evidence observed by<input
+                    id="observed-slider"
+                    type="range"
+                    min="0"
+                    value="0" /><output id="observed-output"></output></label
+                ><label
+                  >Assertions valid at<input
+                    id="valid-date"
+                    type="date" /><output id="valid-output"></output
+                ></label>
+              </div>
+              <div
+                id="replay-summary"
+                class="replay-summary"
+                aria-live="polite"
+              ></div>
+            </div>
+            <div class="panel table-scroll">
+              <table class="replay-table">
+                <thead>
+                  <tr>
+                    <th>Entity / attribute</th>
+                    <th>Asserted value</th>
+                    <th>State at selected date</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody id="replay-rows"></tbody>
+              </table>
+            </div>
+          </section>
+          <section id="view-graph" class="view" hidden>
+            <p class="replay-help">
+              Select a node to investigate its assertions and sources. Edges are
+              explicitly sourced relationship claims. Conflict counts refer to
+              the full comparison.
+            </p>
+            <div class="graph-layout">
+              <div class="panel">
+                <div class="graph-toolbar">
+                  <label
+                    >Relationship scope<select id="graph-scope">
+                      <option value="all">All historical assertions</option>
+                      <option value="active">Active at replay dates</option>
+                    </select></label
+                  ><button id="graph-reset" class="text-button">
+                    Reset selection
+                  </button>
+                </div>
+                <div id="graph-canvas" class="graph-canvas"></div>
+              </div>
+              <div id="graph-detail" class="panel graph-detail"></div>
+            </div>
+          </section>
+          <section id="view-board" class="view" hidden>
+            <p class="board-note">
+              Track analyst decisions without changing detected evidence.
+              Resolving or dismissing a signal needs an explanatory note. Review
+              history is retained locally.
+            </p>
+            <div id="review-board" class="status-columns"></div>
+          </section>
+          <section id="view-watches" class="view" hidden>
+            <p class="replay-help">
+              Rules match detections in this investigation. Appended evidence
+              generates new local inbox alerts. No external feeds, background
+              polling, or messages are sent.
+            </p>
+            <div class="workflow-grid">
+              <section class="panel workflow-panel">
+                <h2>Focus your investigation</h2>
+                <form id="watch-form">
+                  <label
+                    >Watch name<input
+                      id="watch-label"
+                      maxlength="100"
+                      required
+                      placeholder="Revenue conflicts" /></label
+                  ><label
+                    >Entity<select id="watch-entity">
+                      <option value="">All entities</option>
+                    </select></label
+                  ><label
+                    >Detection type<select id="watch-kind">
+                      <option value="conflict">Conflicts</option>
+                      <option value="all">All types</option>
+                      <option value="revision">Revisions</option>
+                      <option value="addition">Additions</option>
+                      <option value="removal">Removals</option>
+                      <option value="unverified">Unverified</option>
+                    </select></label
+                  ><button class="button" type="submit">Create watch</button>
+                </form>
+                <div id="watch-list"></div>
+              </section>
+              <section class="panel workflow-panel">
+                <h2>Local alert inbox</h2>
+                <div id="alert-list"></div>
+              </section>
+            </div>
           </section>
           <section id="view-about" class="view" hidden>
             <div class="panel prose">
               <p class="eyebrow">ORIGINAL OPEN-SOURCE EXAMPLE</p>
-              <h2>SignalGraph Lite</h2>
+              <h2>SignalGraph Desk</h2>
               <p>
                 A deterministic investigation workspace built as a
                 self-contained Graphiti example. The offline engine compares
@@ -217,25 +349,26 @@
               </p>
               <h3>Scope and limits</h3>
               <p>
-                All companies and announcements here are fictional. Rules do not
-                extract facts from arbitrary prose, judge source reliability, or
-                establish truth. The optional Graphiti episode adapter is
-                separate and externally unverified; it never replaces demo
-                results silently.
+                The built-in demo is fictional; imported evidence retains its
+                supplied source labels. Rules do not extract facts from
+                arbitrary prose, judge source reliability, or establish truth.
+                The optional Graphiti episode adapter is separate and externally
+                unverified; it never replaces demo results silently.
               </p>
               <h3>Reproducible by design</h3>
               <p>
-                12 documents · 6 entities · 13 assertions · 8 labelled
-                detections. Use the included evaluation command to measure
-                exact-match precision and recall on this small fixture.
+                The built-in synthetic dataset has 12 documents, 6 entities and
+                8 labelled detections. Imported investigations are separate and
+                retain their supplied source labels. Temporal replay, reviews,
+                watch rules and Markdown briefings operate locally.
               </p>
             </div>
           </section>
         </div>
       </main>
       <footer>
-        SignalGraph Lite <span>Evidence first. Always.</span
-        ><span>Offline showcase / v0.1</span>
+        SignalGraph Desk <span>Evidence first. Always.</span
+        ><span>Local workbench / v0.2</span>
       </footer>
     </div>
     <dialog id="evidence" aria-labelledby="evidence-title">
@@ -250,6 +383,69 @@
         </button>
       </div>
       <div id="evidence-body"></div>
+    </dialog>
+    <div id="notification" class="toast" role="status" hidden></div>
+    <dialog
+      id="import-dialog"
+      class="import-dialog"
+      aria-labelledby="import-title"
+    >
+      <div class="drawer-head">
+        <span class="eyebrow">YOUR EVIDENCE</span
+        ><button
+          id="close-import"
+          class="icon-button"
+          aria-label="Close import"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="import-content">
+        <h2 id="import-title">Bring your own investigation</h2>
+        <p>
+          Import structured JSON containing entities, documents, claims and two
+          comparison periods. Quotes must match source text. Each document must
+          declare whether it is synthetic. Raw prose extraction is not
+          performed.
+        </p>
+        <form id="import-form">
+          <label
+            >Import action<select id="import-action">
+              <option value="new">Create a separate investigation</option>
+              <option value="append">
+                Append immutable evidence to current investigation
+              </option>
+            </select></label
+          ><label
+            >Investigation name<input
+              id="import-name"
+              value="My investigation"
+              maxlength="100"
+              required /></label
+          ><label
+            >Choose a JSON file<input
+              id="import-file"
+              type="file"
+              accept=".json,application/json" /></label
+          ><label
+            >Or paste a dataset<textarea
+              id="import-json"
+              spellcheck="false"
+              placeholder='{"periods":["baseline","current"],"entities":[],"documents":[],"claims":[]}'
+              required
+            ></textarea>
+          </label>
+          <div class="import-actions">
+            <button class="button" type="submit">Validate & import</button
+            ><button class="text-button" id="load-template" type="button">
+              Use current dataset as template</button
+            ><button class="text-button" id="download-dataset" type="button">
+              Download dataset
+            </button>
+          </div>
+          <p id="import-status" class="import-status" role="status"></p>
+        </form>
+      </div>
     </dialog>
   </body>
 </html>
