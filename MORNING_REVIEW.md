@@ -43,7 +43,7 @@ Open **http://127.0.0.1:8765**. Python 3.10+; no install, API key, external LLM,
 | Disposable full browser workflow | Passed: import validation/isolation, append, reload persistence, two clocks, graph scopes, review history, watch/acknowledgement, briefing export and mobile layouts |
 | Original browser workflow | Navigation, filters, source drawer, keyboard dismissal/focus, timeline, JSON export, mobile, empty state and error retry checked separately |
 | Labelled synthetic evaluation | 8 expected, 8 predicted, 8 TP, 0 FP/FN; precision **1.0**, recall **1.0** |
-| Remote CI | Workflow added; remote execution results should be read in GitHub Actions after push |
+| Remote CI | **Passed** on Python 3.10 and 3.12 plus the full browser workflow for implementation commit `42977b4`: [GitHub Actions run](https://github.com/TT27/SignalGraph/actions/runs/38317944312) |
 | Real Graphiti database/model round trip | **Externally unverified** |
 | Upstream root/core/database suites | Not run; core implementation unchanged and app checks isolated |
 
