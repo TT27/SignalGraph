@@ -1,0 +1,350 @@
+{
+  "periods": [
+    "baseline",
+    "current"
+  ],
+  "entities": [
+    {
+      "id": "aster",
+      "name": "Aster Dynamics",
+      "kind": "Company",
+      "aliases": [
+        "Aster",
+        "Aster Dynamics Ltd"
+      ]
+    },
+    {
+      "id": "helios",
+      "name": "Helios Systems",
+      "kind": "Company",
+      "aliases": [
+        "Helios"
+      ]
+    },
+    {
+      "id": "nova",
+      "name": "Nova Labs",
+      "kind": "Company",
+      "aliases": [
+        "Nova"
+      ]
+    },
+    {
+      "id": "nova-energy",
+      "name": "Nova Energy",
+      "kind": "Company",
+      "aliases": [
+        "Nova"
+      ]
+    },
+    {
+      "id": "maya",
+      "name": "Maya Chen",
+      "kind": "Person",
+      "aliases": [
+        "M. Chen"
+      ]
+    },
+    {
+      "id": "atlas",
+      "name": "Atlas Cloud",
+      "kind": "Product",
+      "aliases": [
+        "Atlas"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "id": "s01",
+      "title": "Aster baseline",
+      "publisher": "Aster IR",
+      "observed_at": "2026-01-05T09:00:00Z",
+      "period": "baseline",
+      "body": "Maya Chen is CEO of Aster Dynamics for January 2026.\nAster Dynamics has 120 employees as of 1 January 2026.",
+      "uri": "fixture://announcements/s01",
+      "synthetic": true
+    },
+    {
+      "id": "s02",
+      "title": "Helios operating brief",
+      "publisher": "Helios IR",
+      "observed_at": "2026-01-08T09:00:00Z",
+      "period": "baseline",
+      "body": "Helios expects USD 20m revenue for Q1 2026.",
+      "uri": "fixture://announcements/s02",
+      "synthetic": true
+    },
+    {
+      "id": "s03",
+      "title": "Nova Labs roadmap",
+      "publisher": "Nova Labs IR",
+      "observed_at": "2026-01-10T09:00:00Z",
+      "period": "baseline",
+      "body": "Nova Labs schedules its launch for 1 March 2026.",
+      "uri": "fixture://announcements/s03",
+      "synthetic": true
+    },
+    {
+      "id": "s04",
+      "title": "Aster supplier disclosure",
+      "publisher": "Aster IR",
+      "observed_at": "2026-01-12T09:00:00Z",
+      "period": "baseline",
+      "body": "Aster Dynamics names Helios Systems as its supplier.",
+      "uri": "fixture://announcements/s04",
+      "synthetic": true
+    },
+    {
+      "id": "s05",
+      "title": "Atlas regional brief",
+      "publisher": "Atlas product team",
+      "observed_at": "2026-01-15T09:00:00Z",
+      "period": "baseline",
+      "body": "Atlas Cloud operates in Europe.",
+      "uri": "fixture://announcements/s05",
+      "synthetic": true
+    },
+    {
+      "id": "s06",
+      "title": "Aster workforce update",
+      "publisher": "Aster IR",
+      "observed_at": "2026-02-03T09:00:00Z",
+      "period": "current",
+      "body": "Aster Dynamics now has 150 employees, superseding the January count of 120.",
+      "uri": "fixture://announcements/s06",
+      "synthetic": true
+    },
+    {
+      "id": "s07",
+      "title": "Helios revised outlook",
+      "publisher": "Helios IR",
+      "observed_at": "2026-02-05T09:00:00Z",
+      "period": "current",
+      "body": "Helios expects USD 28m revenue for Q1 2026.",
+      "uri": "fixture://announcements/s07",
+      "synthetic": true
+    },
+    {
+      "id": "s08",
+      "title": "Nova launch briefing",
+      "publisher": "Nova Labs IR",
+      "observed_at": "2026-02-07T09:00:00Z",
+      "period": "current",
+      "body": "Nova Labs schedules its launch for 15 April 2026.",
+      "uri": "fixture://announcements/s08",
+      "synthetic": true
+    },
+    {
+      "id": "s09",
+      "title": "Aster procurement correction",
+      "publisher": "Aster IR",
+      "observed_at": "2026-02-09T09:00:00Z",
+      "period": "current",
+      "body": "Aster Dynamics retracts its January disclosure naming Helios Systems as supplier.",
+      "uri": "fixture://announcements/s09",
+      "synthetic": true
+    },
+    {
+      "id": "s10",
+      "title": "Nova Energy financing",
+      "publisher": "Nova Energy IR",
+      "observed_at": "2026-02-11T09:00:00Z",
+      "period": "current",
+      "body": "Nova Energy announces USD 8m in funding.",
+      "uri": "fixture://announcements/s10",
+      "synthetic": true
+    },
+    {
+      "id": "s11",
+      "title": "Unattributed Nova note",
+      "publisher": "Demo analyst notebook",
+      "observed_at": "2026-02-12T09:00:00Z",
+      "period": "current",
+      "body": "Nova plans a Sydney office; the company identity is unspecified.",
+      "uri": "fixture://announcements/s11",
+      "synthetic": true
+    },
+    {
+      "id": "s12",
+      "title": "Atlas regional expansion",
+      "publisher": "Atlas product team",
+      "observed_at": "2026-02-13T09:00:00Z",
+      "period": "current",
+      "body": "Atlas Cloud now operates in Asia Pacific, superseding its earlier Europe-only regional brief.",
+      "uri": "fixture://announcements/s12",
+      "synthetic": true
+    }
+  ],
+  "claims": [
+    {
+      "id": "c01",
+      "entity": " Aster Dynamics Ltd ",
+      "predicate": "ceo",
+      "value": "Maya Chen",
+      "source_id": "s01",
+      "quote": "Maya Chen is CEO of Aster Dynamics for January 2026.",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_to": "2026-02-01T00:00:00Z",
+      "target": "maya",
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c02",
+      "entity": "aster",
+      "predicate": "employees",
+      "value": "120",
+      "source_id": "s01",
+      "quote": "Aster Dynamics has 120 employees as of 1 January 2026.",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_to": null,
+      "target": null,
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c03",
+      "entity": "helios",
+      "predicate": "revenue_guidance",
+      "value": "USD 20m",
+      "source_id": "s02",
+      "quote": "Helios expects USD 20m revenue for Q1 2026.",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_to": "2026-04-01T00:00:00Z",
+      "target": null,
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c04",
+      "entity": "nova",
+      "predicate": "launch_date",
+      "value": "2026-03-01",
+      "source_id": "s03",
+      "quote": "Nova Labs schedules its launch for 1 March 2026.",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_to": null,
+      "target": null,
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c05",
+      "entity": "aster",
+      "predicate": "supplier",
+      "value": "Helios Systems",
+      "source_id": "s04",
+      "quote": "Aster Dynamics names Helios Systems as its supplier.",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_to": null,
+      "target": "helios",
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c06",
+      "entity": "atlas",
+      "predicate": "region",
+      "value": "Europe",
+      "source_id": "s05",
+      "quote": "Atlas Cloud operates in Europe.",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_to": null,
+      "target": null,
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c07",
+      "entity": "Aster",
+      "predicate": "employees",
+      "value": "150",
+      "source_id": "s06",
+      "quote": "Aster Dynamics now has 150 employees, superseding the January count of 120.",
+      "valid_from": "2026-02-01T00:00:00Z",
+      "valid_to": null,
+      "target": null,
+      "retracted": false,
+      "supersedes": "c02"
+    },
+    {
+      "id": "c08",
+      "entity": "helios",
+      "predicate": "revenue_guidance",
+      "value": "USD 28m",
+      "source_id": "s07",
+      "quote": "Helios expects USD 28m revenue for Q1 2026.",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_to": "2026-04-01T00:00:00Z",
+      "target": null,
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c09",
+      "entity": "nova",
+      "predicate": "launch_date",
+      "value": "2026-04-15",
+      "source_id": "s08",
+      "quote": "Nova Labs schedules its launch for 15 April 2026.",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "valid_to": null,
+      "target": null,
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c10",
+      "entity": "aster",
+      "predicate": "supplier",
+      "value": "withdrawn",
+      "source_id": "s09",
+      "quote": "Aster Dynamics retracts its January disclosure naming Helios Systems as supplier.",
+      "valid_from": "2026-02-01T00:00:00Z",
+      "valid_to": null,
+      "target": "helios",
+      "retracted": true,
+      "supersedes": "c05"
+    },
+    {
+      "id": "c11",
+      "entity": "nova-energy",
+      "predicate": "funding",
+      "value": "USD 8m",
+      "source_id": "s10",
+      "quote": "Nova Energy announces USD 8m in funding.",
+      "valid_from": "2026-02-10T00:00:00Z",
+      "valid_to": null,
+      "target": null,
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c12",
+      "entity": "Nova",
+      "predicate": "office",
+      "value": "Sydney",
+      "source_id": "s11",
+      "quote": "Nova plans a Sydney office; the company identity is unspecified.",
+      "valid_from": "2026-02-01T00:00:00Z",
+      "valid_to": null,
+      "target": null,
+      "retracted": false,
+      "supersedes": null
+    },
+    {
+      "id": "c13",
+      "entity": "atlas",
+      "predicate": "region",
+      "value": "Asia Pacific",
+      "source_id": "s12",
+      "quote": "Atlas Cloud now operates in Asia Pacific, superseding its earlier Europe-only regional brief.",
+      "valid_from": "2026-02-01T00:00:00Z",
+      "valid_to": null,
+      "target": null,
+      "retracted": false,
+      "supersedes": "c06"
+    }
+  ]
+}

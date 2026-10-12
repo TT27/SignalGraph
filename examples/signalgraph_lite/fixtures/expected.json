@@ -1,0 +1,71 @@
+{
+  "description": "Manually labelled synthetic baseline/current comparison; exact event kind and claim ID sets. Not a real-world benchmark.",
+  "events": [
+    {
+      "kind": "revision",
+      "before": [
+        "c02"
+      ],
+      "after": [
+        "c07"
+      ]
+    },
+    {
+      "kind": "conflict",
+      "before": [
+        "c03"
+      ],
+      "after": [
+        "c08"
+      ]
+    },
+    {
+      "kind": "conflict",
+      "before": [
+        "c04"
+      ],
+      "after": [
+        "c09"
+      ]
+    },
+    {
+      "kind": "removal",
+      "before": [
+        "c05"
+      ],
+      "after": [
+        "c10"
+      ]
+    },
+    {
+      "kind": "addition",
+      "before": [],
+      "after": [
+        "c11"
+      ]
+    },
+    {
+      "kind": "unverified",
+      "before": [],
+      "after": [
+        "c12"
+      ]
+    },
+    {
+      "kind": "unverified",
+      "before": [
+        "c01"
+      ],
+      "after": []
+    },
+    {
+      "kind": "revision",
+      "before": [
+        "c06"
+      ],
+      "after": [
+        "c13"
+      ]
+    }
+  ]
+}
